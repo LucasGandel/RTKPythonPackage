@@ -1,0 +1,84 @@
+variables:
+  ITKGitTag: v5.0.1
+  ITKPythonGitTag: v5.0.1
+  CMakeBuildType: Release
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+
+jobs:
+
+- job: 'PackageLinux'
+  timeoutInMinutes: 0
+  cancelTimeoutInMinutes: 300
+  displayName: "Build Linux Python packages"
+  pool:
+    vmImage: 'Ubuntu-16.04'
+
+  steps:
+  - script: |
+      cmake $(Build.SourcesDirectory)
+    workingDirectory: $(Agent.BuildDirectory)
+    displayName: 'Fetch RTK sources'
+  - script: |
+      export ITK_PACKAGE_VERSION=$(ITKPythonGitTag)
+      chmod u+x manylinux-download-cache-and-build-module-wheels.sh
+      ./manylinux-download-cache-and-build-module-wheels.sh
+    workingDirectory: $(Agent.BuildDirectory)/RTK
+    displayName: 'Build Python packages'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactname: 'linuxwheels'
+      targetPath: '$(Agent.BuildDirectory)/RTK/dist'
+
+
+- job: 'PackageMacOS'
+  timeoutInMinutes: 0
+  cancelTimeoutInMinutes: 300
+  displayName: "Build macOS Python packages"
+  pool:
+    vmImage: 'macos-10.13'
+
+  steps:
+  - script: |
+      cmake $(Build.SourcesDirectory)
+    workingDirectory: $(Agent.BuildDirectory)
+    displayName: 'Fetch RTK sources'
+  - script: |
+      export ITK_PACKAGE_VERSION=$(ITKPythonGitTag)
+      chmod u+x macpython-download-cache-and-build-module-wheels.sh
+      ./macpython-download-cache-and-build-module-wheels.sh
+    workingDirectory: $(Agent.BuildDirectory)/RTK
+    displayName: 'Build Python packages'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'MacOSWheels'
+      targetPath: '$(Agent.BuildDirectory)/RTK/dist'
+
+- job: 'PackageWindows'
+  timeoutInMinutes: 0
+  cancelTimeoutInMinutes: 300
+  displayName: "Build Windows Python packages"
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  steps:
+  - script: |
+      cmake $(Build.SourcesDirectory)
+    workingDirectory: $(Agent.BuildDirectory)
+    displayName: 'Fetch RTK sources'
+  - script: |
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+      set ITK_PACKAGE_VERSION=$(ITKPythonGitTag)
+      set CC=cl.exe
+      set CXX=cl.exe
+      powershell.exe -file .\windows-download-cache-and-build-module-wheels.ps1
+    workingDirectory: $(Agent.BuildDirectory)/RTK
+    displayName: 'Build Python packages'
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'WindowsWheels'
+      targetPath: '$(Agent.BuildDirectory)/RTK/dist'
