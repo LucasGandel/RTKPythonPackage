@@ -11,6 +11,8 @@ curl -L https://github.com/InsightSoftwareConsortium/ITKPythonBuilds/releases/do
 ./zstd-1.2.0-linux/bin/unzstd ITKPythonBuilds-linux.tar.zst -o ITKPythonBuilds-linux.tar
 tar xf ITKPythonBuilds-linux.tar
 
+rm ITKPythonBuilds-linux.tar
+
 mkdir tools
 curl https://data.kitware.com/api/v1/file/5c0aa4b18d777f2179dd0a71/download -o doxygen-1.8.11.linux.bin.tar.gz
 tar -xvzf doxygen-1.8.11.linux.bin.tar.gz -C tools
