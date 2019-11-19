@@ -16,24 +16,13 @@ jobs:
   cancelTimeoutInMinutes: 300
   displayName: "Build Linux Python packages"
   pool:
-    vmImage: 'Ubuntu-16.04'
+    name: 'Default'
 
   steps:
   - script: |
       cmake $(Build.SourcesDirectory)
     workingDirectory: $(Agent.BuildDirectory)
     displayName: 'Fetch RTK sources'
-  - script: |
-      wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-ubuntu1604.pin
-      mv cuda-ubuntu1604.pin /etc/apt/preferences.d/cuda-repository-pin-600
-      sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
-      sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/ /"
-      sudo apt-get update
-      sudo apt-get -y install cuda
-      export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.1
-      export PATH=${CUDA_TOOLKIT_ROOT_DIR}/bin:${PATH}
-    workingDirectory: $(Agent.BuildDirectory)
-    displayName: 'Install CUDA'
   - script: |
       export ITK_PACKAGE_VERSION=$(ITKPythonGitTag)
       chmod u+x manylinux-download-cache-and-build-module-wheels.sh
@@ -44,7 +33,6 @@ jobs:
     inputs:
       artifactname: 'linuxwheels'
       targetPath: '$(Agent.BuildDirectory)/RTK/dist'
-
 
 - job: 'PackageMacOS'
   timeoutInMinutes: 0
